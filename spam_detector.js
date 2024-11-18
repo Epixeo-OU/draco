@@ -38,9 +38,19 @@ function analyzeIncomingEmails() {
  */
 function analyzeEmailContent(content) {
   // Keywords commonly found in scam or threat emails
-  var scamKeywords = ['urgent', 'immediate action', 'transfer funds', 'confidential', 'password', 'account locked'];
-  var threatKeywords = ['pay or else', 'consequences', 'legal action', 'hacked', 'blackmail', 'ransom'];
-
+  var scamKeywords = [
+    'urgent', 'immediate action', 'transfer funds', 'confidential', 
+    'password', 'account locked', 'lottery', 'prize', 'gift card', 
+    'tax refund', 'win', 'bitcoin', 'investment', 'cryptocurrency', 
+    'bank details', 'social security number', 'verify your account'
+  ];
+  
+  var threatKeywords = [
+    'pay or else', 'consequences', 'legal action', 'hacked', 'blackmail', 
+    'ransom', 'your life is in danger', 'we have your information', 'threaten', 
+    'deadly consequences', 'act now', 'delete your account', 'spy on you', 
+    'your data is compromised', 'destroy your reputation'
+  ];
   // Count the occurrences of each keyword type
   var scamCount = countKeywordOccurrences(content, scamKeywords);
   var threatCount = countKeywordOccurrences(content, threatKeywords);
