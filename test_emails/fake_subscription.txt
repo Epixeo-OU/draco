@@ -1,0 +1,14 @@
+Dear Customer,
+
+Your subscription to Premium Service has been automatically renewed for the next 12 months. The total charge of $299.99 will be deducted from your account within the next 24 hours.
+
+If you did not authorize this renewal, please click the link below to cancel your subscription and get a refund:
+
+[Cancel Subscription]
+
+Failure to cancel within 48 hours will result in further charges.
+
+Thank you for choosing Premium Service.
+
+Best regards,
+Premium Service Support Team
