@@ -14,7 +14,54 @@ function analyzeIncomingEmails() {
         var subject = message.getSubject();
         var sender = message.getFrom();
         var body = message.getPlainBody();
-        
+                /**
+         * Analyze incoming emails and tag them if identified as scam or threat using Mini GPT.
+         */
+        function analyzeIncomingEmails() {
+            // Retrieve API endpoint and API key from Properties Service
+            var config = getConfig();
+          
+            // Search for emails in the inbox received in the last 7 days
+            var threads = GmailApp.search('newer_than:7d');
+            var messages = GmailApp.getMessagesForThreads(threads);
+          
+            var rateLimit = 100; // Example rate limit for the subscription
+            var count = 0;
+          
+            messages.forEach(function(thread) {
+              if (count >= rateLimit) {
+                Logger.log("Rate limit reached. Consider upgrading your subscription for more analyses.");
+                return;
+              }
+              thread.forEach(function(message) {
+                if (count >= rateLimit) {
+                  Logger.log("Rate limit reached. Consider upgrading your subscription for more analyses.");
+                  return;
+                }
+                count++;
+                
+                var subject = message.getSubject();
+                var sender = message.getFrom();
+                var body = message.getPlainBody();
+                
+                // Call external Mini GPT API for scam and threat analysis
+                var analysis = analyzeWithMiniGPT(body, config.apiEndpoint, config.apiKey);
+          
+                // Log the result
+                Logger.log({
+                  subject: subject,
+                  sender: sender,
+                  analysis: analysis
+                });
+          
+                // Add tags if a threat is detected
+                if (analysis.isThreat) {
+                  Logger.log("Potential threat detected from " + sender + ". Subject: " + subject);
+                  applyLabelToThread(thread[0], 'Potential Threat');
+                }
+              });
+            });
+        }
         // Call external Mini GPT API for scam and threat analysis
         var analysis = analyzeWithMiniGPT(body, config.apiEndpoint, config.apiKey);
   
