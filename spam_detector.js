@@ -110,4 +110,75 @@ function analyzeIncomingEmails() {
     // Add the label to the thread
     label.addToThread(thread);
   }
+
+  /**
+ * Analyze incoming emails and suggest appropriate actions for scams or threats.
+ */
+function analyzeIncomingEmailsWithSuggestions() {
+    var config = getConfig();
+    var threads = GmailApp.search('newer_than:7d');
+    var messages = GmailApp.getMessagesForThreads(threads);
+  
+    messages.forEach(function (thread) {
+      thread.forEach(function (message) {
+        var subject = message.getSubject();
+        var sender = message.getFrom();
+        var body = message.getPlainBody();
+  
+        // Call Mini GPT API for analysis
+        var analysis = analyzeWithMiniGPT(body, config.apiEndpoint, config.apiKey);
+  
+        // Log the result and suggest actions
+        Logger.log({
+          subject: subject,
+          sender: sender,
+          analysis: analysis,
+          suggestion: suggestAction(analysis)
+        });
+  
+        // Add labels and notify if necessary
+        if (analysis.isThreat) {
+          Logger.log("Potential threat detected: " + sender + " | Subject: " + subject);
+          applyLabelToThread(thread[0], 'Potential Threat');
+  
+          // Send an email to notify the user
+          GmailApp.sendEmail(Session.getActiveUser().getEmail(), 
+            "Alert: Threat Detected in Email", 
+            "A potential scam or threat was detected in an email from: " + sender + "\n\n" +
+            "Subject: " + subject + "\n\n" +
+            "Suggested Action: " + suggestAction(analysis)
+          );
+        }
+      });
+    });
+  }
+  
+  /**
+   * Provide suggestions for handling scams or threats.
+   * @param {object} analysis - Analysis result from Mini GPT API.
+   * @return {string} Suggested action.
+   */
+  function suggestAction(analysis) {
+    if (!analysis.isThreat) {
+      return "No action needed. This email appears to be safe.";
+    }
+  
+    var message = analysis.message.toLowerCase();
+  
+    if (message.includes('phishing')) {
+      return "This email seems to be a phishing attempt. Do not click on any links or provide personal information. Mark it as spam and delete it.";
+    } else if (message.includes('malware')) {
+      return "This email might contain malware. Avoid downloading attachments or clicking on links. Mark it as spam and delete it.";
+    } else if (message.includes('extortion') || message.includes('blackmail')) {
+      return "This email appears to be an extortion or blackmail attempt. Do not respond or send money. Report it to your local authorities or cybersecurity team.";
+    } else if (message.includes('fake invoice')) {
+      return "This email might be a fake invoice scam. Verify the sender and check for authenticity. If in doubt, do not make any payments or download attachments.";
+    } else if (message.includes('lottery')) {
+      return "This email seems to be a lottery scam. Remember, legitimate lotteries do not require payments or bank details to claim prizes. Mark it as spam.";
+    } else if (message.includes('threat')) {
+      return "This email contains threatening language. Do not engage with the sender. Report it to your local authorities or cybersecurity team.";
+    } else {
+      return "A potential threat was detected. Exercise caution. Avoid interacting with the sender or email until verified.";
+    }
+  }
   
